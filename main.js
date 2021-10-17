@@ -1,4 +1,8 @@
-function Player(_name, _img, _weapon = ["fist", "leg"], _hp = 100) {
+const arenaBlock = document.querySelector(".arenas");
+const btn = document.querySelector(".arenas .button");
+
+function Player(_type, _name, _img, _weapon = ["fist", "leg"], _hp = 100) {
+  this.type = _type;
   this.name = _name;
   this.hp = _hp;
   this.img = _img;
@@ -8,20 +12,24 @@ function Player(_name, _img, _weapon = ["fist", "leg"], _hp = 100) {
   };
 }
 
-function createPlayer(playerType, player) {
-  const playerContainer = document.createElement("div");
-  playerContainer.classList.add(playerType);
+function createEle(tag, className) {
+  const ele = document.createElement(tag);
 
-  const progressbarContainer = document.createElement("div");
-  progressbarContainer.classList.add("progressbar");
-  const lifeContainer = document.createElement("div");
-  lifeContainer.classList.add("life");
+  if (className) {
+    ele.classList.add(className);
+  }
+
+  return ele;
+}
+
+function createPlayer(player) {
+  const playerContainer = createEle("div", `player${player.type}`);
+  const progressbarContainer = createEle("div", "progressbar");
+  const lifeContainer = createEle("div", "life");
   lifeContainer.style.width = `${player.hp}%`;
-  const nameContainer = document.createElement("div");
-  nameContainer.classList.add("name");
+  const nameContainer = createEle("div", "name");
   nameContainer.textContent = player.name;
-  const imgContainer = document.createElement("div");
-  imgContainer.classList.add("character");
+  const imgContainer = createEle("div", "character");
   imgContainer.innerHTML = `<img src="${player.img}" alt="${player.name}">`;
 
   progressbarContainer.append(lifeContainer);
@@ -33,18 +41,44 @@ function createPlayer(playerType, player) {
 }
 
 const player1 = new Player(
+  1,
   "SubZero",
   "http://reactmarathon-api.herokuapp.com/assets/subzero.gif",
 );
-player1.attack();
 
 const player2 = new Player(
+  2,
   "Scorpion",
   "http://reactmarathon-api.herokuapp.com/assets/scorpion.gif",
 );
-player2.attack();
 
-const arenaBlock = document.querySelector(".arenas");
+arenaBlock.append(createPlayer(player1));
+arenaBlock.append(createPlayer(player2));
 
-arenaBlock.append(createPlayer("player1", player1));
-arenaBlock.append(createPlayer("player2", player2));
+function getRandomDamage() {
+  return Math.floor(Math.random() * 20) + 1;
+}
+
+function changeHP(player) {
+  const playerLife = document.querySelector(`.player${player.type} .life`);
+  player.hp -= getRandomDamage();
+  playerLife.style.width = `${player.hp}%`;
+
+  if (player.hp <= 0) {
+    player.hp = 0;
+    playerLife.style.width = `${player.hp}%`;
+    btn.disabled = true;
+    showWinner(player.type);
+  }
+}
+
+function showWinner(playerType) {
+  const title = createEle("div", "winTitle");
+  title.textContent = `${(playerType === 2) ? player1.name : player2.name} wins`;
+  arenaBlock.append(title);
+}
+
+btn.addEventListener("click", function () {
+  changeHP(player1);
+  changeHP(player2);
+});
